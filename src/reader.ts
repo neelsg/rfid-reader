@@ -64,8 +64,7 @@ export const reader = ((): Reader => {
     let message = `unknown message from reader: ${data.toString('hex')}`
     if (data[4] == 0xC0 && data[5] == 0x00 && data[6] == 0x00) {
       message = 'stopped'
-    }
-    if (data[4] == 0xC1 && data[5] == 0x02 && data[6] == 0x00) {
+    } else if (data[4] == 0xC1 && data[5] == 0x02 && data[6] == 0x00) {
       message = `tag ${data.subarray(10, -5).toString('hex')}`
     }
 

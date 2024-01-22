@@ -8,7 +8,7 @@ type Server = {
 }
 
 export const server = ((): Server => {
-  let sockets: WebSocket[] = [];
+  let clients: WebSocket[] = [];
   let listeners: ((data: WebSocket.RawData) => void)[] = [];
   
   const connect = async () => {
@@ -16,31 +16,24 @@ export const server = ((): Server => {
     const port = config.server?.port || 8080
     const server = new WebSocket.Server({port})
     console.log(`serving on ws://localhost:${port}`)
-    server.on('connection', (socket) => {
-      sockets.push(socket)
+    server.on('connection', (client: WebSocket) => {
+      clients.push(client)
   
-      console.log(`connected to client`)
-      socket.send('commands:')
-      socket.send('- start : start reading tags')
-      socket.send('- stop : stop reading tags')
-      socket.send('- reconnect : disconnect and reconnect from the reader')
-      
-      socket.on('message', (data) => {
+      client.on('message', (data) => {
         listeners.forEach((l) => {
           l(data)
         })
       })
   
-      socket.on('close', () => {
-        sockets = sockets.filter((s) => s !== socket)
-        console.log(`disconnected from client`)
+      client.on('close', () => {
+        clients = clients.filter((c) => c !== client)
       })
     })
   }
 
   const send = (data: string): void => {
-    sockets.forEach((s) => {
-      s.send(data)
+    clients.forEach((c: WebSocket) => {
+      c.send(data)
     })
   }
   const listen = (callback: (data: WebSocket.RawData) => void): void => {
